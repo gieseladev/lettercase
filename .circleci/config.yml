@@ -62,7 +62,7 @@ jobs:
           command: pip install --upgrade setuptools wheel
       - run:
           name: Building distribution archives
-          command: pipenv run setup.py sdist bdist_wheel
+          command: python setup.py sdist bdist_wheel
       - run:
           name: Moving archives to workspace
           command: mv dist /tmp/workspace/dist

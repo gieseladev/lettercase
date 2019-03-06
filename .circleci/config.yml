@@ -93,15 +93,15 @@ workflows:
     jobs:
       - install
 
-    tests:
-      requires:
-        - install
+      - tests:
+          requires:
+            - install
 
-    build:
-      requires:
-        - install
+      - build:
+          requires:
+            - install
 
-    deploy:
-      requires:
-        - build
-        - tests
+      - deploy:
+          requires:
+            - build
+            - tests

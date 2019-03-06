@@ -1,7 +1,7 @@
 from collections import deque
 from typing import Deque
 
-from lettercase import LetterCase, detect_letter_case
+from lettercase import LetterCase, detect_case
 
 __all__ = ["dromedary_to_snake_case", "pascal_to_snake_case", "upper_snake_to_snake_case", "darwin_to_snake_case", "to_snake_case"]
 
@@ -38,7 +38,7 @@ def dromedary_to_snake_case(text: str) -> str:
 
 def pascal_to_snake_case(text: str) -> str:
     """Convert PascalCase to snake_case."""
-    return darwin_to_snake_case(text)
+    return dromedary_to_snake_case(text)
 
 
 def upper_snake_to_snake_case(text: str) -> str:
@@ -53,7 +53,7 @@ def darwin_to_snake_case(text: str) -> str:
 
 def to_snake_case(text: str) -> str:
     """Detect case and convert to snake_case."""
-    possible = detect_letter_case(text)
+    possible = detect_case(text)
 
     if not possible:
         raise TypeError(f"Unsupported letter case: {text}")
@@ -68,7 +68,7 @@ def to_snake_case(text: str) -> str:
         return darwin_to_snake_case(text)
 
     if LetterCase.DROMEDARY in possible:
-        return darwin_to_snake_case(text)
+        return dromedary_to_snake_case(text)
 
     if LetterCase.PASCAL in possible:
         return pascal_to_snake_case(text)

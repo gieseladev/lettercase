@@ -2,10 +2,10 @@ from typing import Iterator, Set
 
 from .letter_case import CAMEL_CASE, LetterCase
 
-_all__ = ["detect_letter_case"]
+_all__ = ["detect_case"]
 
 
-def detect_letter_case(text: str, fast_return: bool = True, *, ignore_space: bool = True) -> Set[LetterCase]:
+def detect_case(text: str, fast_return: bool = True, *, ignore_space: bool = True) -> Set[LetterCase]:
     """Determine the `LetterCase` of a word.
 
     Leading underscores are ignored in order to support

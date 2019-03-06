@@ -16,6 +16,10 @@ references:
       command: |
         sudo pip install pipenv
         pipenv install --dev
+  tag_filters: &tag_filters
+    filters:
+      tags:
+        only: /^v.*/
 
 executors:
   python:
@@ -93,13 +97,16 @@ jobs:
 workflows:
   main:
     jobs:
-      - install
+      - install:
+          <<: *tag_filters
 
       - tests:
+          <<: *tag_filters
           requires:
             - install
 
       - build:
+          <<: *tag_filters
           requires:
             - install
 
@@ -107,3 +114,8 @@ workflows:
           requires:
             - build
             - tests
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /^v.*/

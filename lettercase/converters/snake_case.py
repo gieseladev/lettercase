@@ -2,6 +2,7 @@ from collections import deque
 from typing import Deque
 
 from lettercase import LetterCase, detect_case
+from .dromedary_case import pascal_to_dromedary_case
 
 __all__ = ["dromedary_to_snake_case", "pascal_to_snake_case", "upper_snake_to_snake_case", "darwin_to_snake_case", "to_snake_case"]
 
@@ -38,7 +39,7 @@ def dromedary_to_snake_case(text: str) -> str:
 
 def pascal_to_snake_case(text: str) -> str:
     """Convert PascalCase to snake_case."""
-    return dromedary_to_snake_case(text)
+    return dromedary_to_snake_case(pascal_to_dromedary_case(text))
 
 
 def upper_snake_to_snake_case(text: str) -> str:

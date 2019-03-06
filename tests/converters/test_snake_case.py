@@ -13,6 +13,8 @@ def test_dromedary_to_snake_case():
 
 def test_pascal_to_snake_case():
     assert pascal_to_snake_case("CamelCase") == "camel_case"
+    assert pascal_to_snake_case("_CamelCase") == "_camel_case"
+    assert pascal_to_snake_case("__CamelCase") == "__camel_case"
 
 
 def test_upper_snake_to_snake_case():

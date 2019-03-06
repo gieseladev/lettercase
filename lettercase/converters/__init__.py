@@ -12,12 +12,12 @@ def get_converter(from_case: Optional[LetterCaseType], to_case: LetterCaseType) 
         :param from_case: `LetterCase` of the original text. If `None` a generic handler will be searched.
         :param to_case: Target `LetterCase`
     """
-    from_case = get_letter_case(from_case)
     to_case = get_letter_case(to_case)
 
     name = f"to_{to_case.name.lower()}_case"
 
     if from_case is not None:
+        from_case = get_letter_case(from_case)
         name = f"{from_case.name.lower()}_{name}"
 
     return globals().get(name)

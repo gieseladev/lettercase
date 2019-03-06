@@ -66,8 +66,8 @@ jobs:
       - run:
           name: Moving archives to workspace
           command: |
-            mkdir -p /tmp/workspace/dist
-            mv dist /tmp/workspace/dist
+            mkdir -p /tmp/workspace/
+            mv dist /tmp/workspace/
       - persist_to_workspace:
           root: /tmp/workspace
           paths:

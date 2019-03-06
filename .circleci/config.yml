@@ -65,7 +65,9 @@ jobs:
           command: python setup.py sdist bdist_wheel
       - run:
           name: Moving archives to workspace
-          command: mv dist /tmp/workspace/dist
+          command: |
+            mkdir -p /tmp/workspace/dist
+            mv dist /tmp/workspace/dist
       - persist_to_workspace:
           root: /tmp/workspace
           paths:

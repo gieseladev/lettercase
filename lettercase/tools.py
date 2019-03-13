@@ -3,10 +3,10 @@
 from collections import UserDict
 from contextlib import suppress
 from functools import wraps
-from typing import Any, Callable, Iterable, Iterator, Mapping, MutableMapping, MutableSequence, Optional, Set, TypeVar, Union, overload
+from typing import Any, Iterable, Iterator, Mapping, MutableMapping, MutableSequence, Optional, Set, TypeVar, Union
 
-from .converters import get_converter
-from .letter_case import LetterCaseType
+from .converters import ConverterType, get_converter
+from .letter_case import LetterCaseType, get_letter_case
 
 __all__ = ["ConversionMemo", "memo_converter", "convert_iter_items", "mut_convert_items", "mut_convert_keys"]
 
@@ -27,14 +27,26 @@ class ConversionMemo(UserDict):
     Since this is a two-way mapping, setting a key to a value will also set the value to the key
     and deleting a key will also remove the converted key.
 
-    Args:
-        converter ((str) -> str): Converter to use for conversion.
-    """
-    converter: Callable[[str], str]
+    Attributes:
+        from_case (LetterCase): First letter case
+        to_case (LetterCase): Second letter case
 
-    def __init__(self, converter: Callable[[str], str]) -> None:
+    Args:
+        from_case (LetterCaseType): First letter case
+        to_case (LetterCaseType): Second letter case
+
+    Notes:
+        The cases need to be specified because the memo cannot handle more than two cases
+        at once.
+
+        The order of the cases in the constructor matters! The order determines how
+        the `direction` parameter is interpreted.
+    """
+
+    def __init__(self, from_case: LetterCaseType, to_case: LetterCaseType) -> None:
         super().__init__()
-        self.converter = converter
+        self.from_case = get_letter_case(from_case)
+        self.to_case = get_letter_case(to_case)
 
     def __setitem__(self, text: str, converted_text: str) -> None:
         setter = super().__setitem__
@@ -47,38 +59,49 @@ class ConversionMemo(UserDict):
         deleter(text)
         deleter(converted_text)
 
-    def convert(self, text: str) -> str:
+    @property
+    def forward_converter(self) -> ConverterType:
+        """Get the converter which converts from `from_case` to `to_case`.
+
+        See Also:
+            `forward_converter`
+        """
+        return get_converter(self.from_case, self.to_case)
+
+    @property
+    def backward_converter(self) -> ConverterType:
+        """Get the converter which converts from `to_case` to `from_case`.
+
+        See Also:
+            `forward_converter`
+        """
+        return get_converter(self.to_case, self.from_case)
+
+    def convert(self, text: str, direction: bool) -> str:
         """Convert a text and add it to the memo.
 
         Args:
             text: Text to convert
+            direction: `True` to use `forward_converter`,
+                `False` for `backward_converter`
         """
         try:
             value = self[text]
         except KeyError:
-            value = self[text] = self.converter(text)
+            converter = self.forward_converter if direction else self.backward_converter
+            value = self[text] = converter(text)
 
         return value
 
-    # noinspection PyOverloads
-    @overload
-    def get(self, text: str) -> str:
-        ...
-
     # noinspection PyMethodOverriding
-    @overload
-    def get(self, text: str, *, convert: bool = True, default: T = None) -> Optional[Union[str, T]]:
-        ...
-
-    # noinspection PyMethodOverriding
-    def get(self, text: str, *, convert: bool = True, default: T = None) -> Optional[Union[str, T]]:
+    def get(self, text: str, *, direction: bool = None, default: T = None) -> Optional[Union[str, T]]:
         """Get the converted text.
 
         Args:
             text: Text to get the converted text for.
-            convert: Whether or not to convert the text.
-                This takes effect if the converted text
-                is not in the map.
+            direction: See `convert` for an explanation of this keyword argument.
+                If you pass `None` instead of a `bool`, the text will not be converted
+                if it does not exist and the `default` value is used.
             default: Value to return when the text is not
                 in the memo and `convert` is `False`.
                 If `convert` is `True`, this value will never
@@ -87,17 +110,26 @@ class ConversionMemo(UserDict):
         try:
             return self[text]
         except KeyError:
-            if convert:
-                return self.convert(text)
+            if direction is not None:
+                return self.convert(text, direction)
+
             return default
 
 
-def memo_converter(converter: Callable[[str], str], memo: Union[Mapping[str, str], MutableMapping[str, str]]) -> Callable[[str], str]:
+def memo_converter(converter: ConverterType, memo: Union[Mapping[str, str], MutableMapping[str, str]]) -> ConverterType:
     """Decorator which adds memoization to a converter.
 
     Args:
         converter: Converter to patch
         memo: Memoization mapping to use. If the mapping is mutable it will automatically be updated with new keys.
+
+    Examples:
+        >>> memo_data = {}
+        >>> converter = memo_converter(get_converter("snake", "dromedary"), memo_data)
+        >>> print(converter("snake_test"))
+        snakeTest
+        >>> print(memo_data)
+        {'snake_test': 'snakeTest'}
     """
 
     @wraps(converter)
@@ -117,8 +149,12 @@ def memo_converter(converter: Callable[[str], str], memo: Union[Mapping[str, str
     return decorator
 
 
-def _get_converter(from_case: Optional[LetterCaseType], to_case: LetterCaseType, memo: Optional[Mapping[str, str]]) -> Callable[[str], str]:
-    """Internal utility function to get a patched converter."""
+def _get_converter(from_case: Optional[LetterCaseType], to_case: LetterCaseType, memo: Optional[Mapping[str, str]]) -> ConverterType:
+    """Internal utility function to get a patched converter.
+
+    Raises:
+        ValueError: If no converter was found from `from_case` to `to_case`
+    """
     converter = get_converter(from_case, to_case)
     if not converter:
         if from_case:
@@ -126,7 +162,7 @@ def _get_converter(from_case: Optional[LetterCaseType], to_case: LetterCaseType,
         else:
             text = f"No general converter to {to_case}"
 
-        raise TypeError(text)
+        raise ValueError(text)
 
     if memo is not None:
         converter = memo_converter(converter, memo)

@@ -3,21 +3,20 @@ from lettercase import convert_iter_items, memo_converter, mut_convert_items, mu
 
 
 def test_conversion_memo():
-    converter = lettercase.get_converter("dromedary_case", "snake_case")
-    memo = lettercase.ConversionMemo(converter)
-    assert memo.convert("dromedaryCase") == "dromedary_case"
+    memo = lettercase.ConversionMemo("dromedary_case", "snake_case")
+    assert memo.convert("dromedaryCase", True) == "dromedary_case"
     assert memo["dromedaryCase"] == "dromedary_case"
     assert memo["dromedary_case"] == "dromedaryCase"
 
-    assert memo.get("testIng") == "test_ing"
+    assert memo.get("test_ing", direction=False) == "testIng"
     assert memo["testIng"] == "test_ing"
     assert memo["test_ing"] == "testIng"
 
-    assert memo.get("doesNotExist", convert=False) is None
+    assert memo.get("doesNotExist") is None
 
     assert "doesNotExist" not in memo
 
-    assert memo.get("doesNotExist", default="something", convert=False) == "something"
+    assert memo.get("doesNotExist", default="something") == "something"
 
     del memo["testIng"]
     assert "testIng" not in memo

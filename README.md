@@ -22,7 +22,7 @@ pip install lettercase
 The basic usage of the library is pretty straight-forward.
 
 To simply convert a string to another case:
-```python
+```pydocstring
 >>> import lettercase
 
 >>> lettercase.convert_to("helloWorld", "snake")
@@ -32,7 +32,7 @@ hello_world
 To detect the case, use the `detect_case` function
 which returns a set of all possible cases for the given
 string.
-```python
+```pydocstring
 >>> import lettercase
 
 >>> lettercase.detect_case("helloWorld")

@@ -7,11 +7,13 @@ from . import dromedary_case, snake_case
 from .dromedary_case import *
 from .snake_case import *
 
-__all__ = ["get_converter", "convert_to", *snake_case.__all__, *dromedary_case.__all__]
+__all__ = ["ConverterType", "get_converter", "convert_to", *snake_case.__all__, *dromedary_case.__all__]
+
+ConverterType = Callable[[str], str]
 
 
 @lru_cache(maxsize=None)
-def get_converter(from_case: Optional[LetterCaseType], to_case: LetterCaseType) -> Optional[Callable[[str], str]]:
+def get_converter(from_case: Optional[LetterCaseType], to_case: LetterCaseType) -> Optional[ConverterType]:
     """Find a converter which converts between the given cases.
 
     This function uses an LRU cache to speed up the lookup process.

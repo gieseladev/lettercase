@@ -9,6 +9,6 @@ def test_detect_letter_case():
 
     assert detect_case("Sneaky_Darwin_Case") == {LetterCase.DARWIN}
 
-    assert detect_case("UPPER_CASE") == {LetterCase.UPPER_SNAKE}
+    assert detect_case("SCREAMING_CASE") == {LetterCase.SCREAMING_SNAKE}
 
     assert detect_case("ambiguous") == {LetterCase.SNAKE, LetterCase.DROMEDARY}

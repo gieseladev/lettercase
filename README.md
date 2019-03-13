@@ -7,17 +7,12 @@ cases.
 
 Supported cases:
 - snake_case
-- UPPER_SNAKE_CASE
+- SCREAMING_SNAKE_CASE
 - Darwin_Case
 - dromedaryCase
 - PascalCase
 
 ## Installation
-Using pipenv
-```shell
-pipenv install lettercase
-```
-
 Using pip
 ```shell
 pip install lettercase

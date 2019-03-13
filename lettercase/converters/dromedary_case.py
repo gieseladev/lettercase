@@ -2,7 +2,8 @@ from typing import List
 
 from lettercase import LetterCase, detect_case
 
-__all__ = ["snake_to_dromedary_case", "upper_snake_to_dromedary_case", "darwin_to_dromedary_case", "pascal_to_dromedary_case", "to_dromedary_case"]
+__all__ = ["snake_to_dromedary_case", "screaming_snake_to_dromedary_case", "darwin_to_dromedary_case", "pascal_to_dromedary_case",
+           "to_dromedary_case"]
 
 
 def snake_to_dromedary_case(text: str) -> str:
@@ -31,8 +32,8 @@ def snake_to_dromedary_case(text: str) -> str:
     return "".join(chars)
 
 
-upper_snake_to_dromedary_case = snake_to_dromedary_case
-upper_snake_to_dromedary_case.__doc__ = """Convert from UPPER_SNAKE_CASE to dromedaryCase."""
+screaming_snake_to_dromedary_case = snake_to_dromedary_case
+screaming_snake_to_dromedary_case.__doc__ = """Convert from SCREAMING_SNAKE_CASE to dromedaryCase."""
 
 darwin_to_dromedary_case = snake_to_dromedary_case
 darwin_to_dromedary_case.__doc__ = """Convert from Darwin_Case to dromedaryCase."""
@@ -65,8 +66,8 @@ def to_dromedary_case(text: str) -> str:
 
     if LetterCase.SNAKE in possible:
         return snake_to_dromedary_case(text)
-    if LetterCase.UPPER_SNAKE in possible:
-        return upper_snake_to_dromedary_case(text)
+    if LetterCase.SCREAMING_SNAKE in possible:
+        return screaming_snake_to_dromedary_case(text)
     if LetterCase.DARWIN in possible:
         return darwin_to_dromedary_case(text)
 

@@ -1,5 +1,5 @@
 from lettercase import darwin_to_snake_case, dromedary_to_snake_case, pascal_to_snake_case, to_snake_case, \
-    upper_snake_to_snake_case
+    screaming_snake_to_snake_case
 
 
 def test_dromedary_to_snake_case():
@@ -17,9 +17,9 @@ def test_pascal_to_snake_case():
     assert pascal_to_snake_case("__CamelCase") == "__camel_case"
 
 
-def test_upper_snake_to_snake_case():
-    assert upper_snake_to_snake_case("SNAKE_CASE") == "snake_case"
-    assert upper_snake_to_snake_case("THIS") == "this"
+def test_screaming_snake_to_snake_case():
+    assert screaming_snake_to_snake_case("SNAKE_CASE") == "snake_case"
+    assert screaming_snake_to_snake_case("THIS") == "this"
 
 
 def test_darwin_to_snake_case():

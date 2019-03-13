@@ -1,3 +1,5 @@
+"""Letter case detection."""
+
 from typing import Iterator, Set
 
 from .letter_case import CAMEL_CASE, LetterCase
@@ -13,18 +15,17 @@ def detect_case(text: str, fast_return: bool = True, *, ignore_space: bool = Tru
     character the empty set is returned.
 
     Args:
-      :param text: String to analyze
-      :param fast_return: When set to `False` the function is forced
+      text: String to analyze
+      fast_return: When set to `False` the function is forced
         to analyse the entire string. By default it continues
         until the result is either specifically determined, or
         the text runs out.
-
-    Keyword Args:
-      :param ignore_space: When set to `False` the function no longer
+      ignore_space: When set to `False` the function no longer
         ignores spaces in the text and instead treats them
         like a normal character which leads to an empty set
         being returned.
     """
+    # noinspection PyTypeChecker
     possible = set(iter(LetterCase))
     char_iter: Iterator[str] = iter(text)
 
@@ -48,7 +49,7 @@ def detect_case(text: str, fast_return: bool = True, *, ignore_space: bool = Tru
                 elif not prev_is_underscore:
                     possible.discard(LetterCase.DARWIN)
             else:
-                possible.discard(LetterCase.UPPER_SNAKE)
+                possible.discard(LetterCase.SCREAMING_SNAKE)
 
                 if not found_alnum:
                     possible.discard(LetterCase.PASCAL)

@@ -4,7 +4,7 @@ from typing import Deque
 from lettercase import LetterCase, detect_case
 from .dromedary_case import pascal_to_dromedary_case
 
-__all__ = ["dromedary_to_snake_case", "pascal_to_snake_case", "upper_snake_to_snake_case", "darwin_to_snake_case", "to_snake_case"]
+__all__ = ["dromedary_to_snake_case", "pascal_to_snake_case", "screaming_snake_to_snake_case", "darwin_to_snake_case", "to_snake_case"]
 
 
 def dromedary_to_snake_case(text: str) -> str:
@@ -42,14 +42,14 @@ def pascal_to_snake_case(text: str) -> str:
     return dromedary_to_snake_case(pascal_to_dromedary_case(text))
 
 
-def upper_snake_to_snake_case(text: str) -> str:
-    """Convert UPPER_SNAKE_CASE to snake_case."""
+def screaming_snake_to_snake_case(text: str) -> str:
+    """Convert SCREAMING_SNAKE_CASE to snake_case."""
     return text.lower()
 
 
 def darwin_to_snake_case(text: str) -> str:
     """Convert Darwin_Case to snake_case."""
-    return upper_snake_to_snake_case(text)
+    return screaming_snake_to_snake_case(text)
 
 
 def to_snake_case(text: str) -> str:
@@ -62,8 +62,8 @@ def to_snake_case(text: str) -> str:
     if LetterCase.SNAKE in possible:
         return text
 
-    if LetterCase.UPPER_SNAKE in possible:
-        return upper_snake_to_snake_case(text)
+    if LetterCase.SCREAMING_SNAKE in possible:
+        return screaming_snake_to_snake_case(text)
 
     if LetterCase.DARWIN in possible:
         return darwin_to_snake_case(text)

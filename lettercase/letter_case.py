@@ -8,13 +8,13 @@ class LetterCase(Enum):
     """Supported letter cases.
 
     - snake_case
-    - UPPER_SNAKE_CASE
+    - SCREAMING_SNAKE_CASE
     - Darwin_Case
     - PascalCase
     - dromedaryCase
     """
     SNAKE = "snake"
-    UPPER_SNAKE = "upper_snake"
+    SCREAMING_SNAKE = "screaming_snake"
     DARWIN = "darwin"
 
     PASCAL = "pascal"
@@ -23,7 +23,7 @@ class LetterCase(Enum):
 
 CAMEL_CASE: Set[LetterCase] = {LetterCase.PASCAL, LetterCase.DROMEDARY}
 
-UNDERSCORE_CASE: Set[LetterCase] = {LetterCase.SNAKE, LetterCase.UPPER_SNAKE, LetterCase.DARWIN}
+UNDERSCORE_CASE: Set[LetterCase] = {LetterCase.SNAKE, LetterCase.SCREAMING_SNAKE, LetterCase.DARWIN}
 
 LetterCaseType = Union[LetterCase, str]
 
@@ -31,9 +31,15 @@ LetterCaseType = Union[LetterCase, str]
 def get_letter_case(case: LetterCaseType) -> LetterCase:
     """Get a `LetterCase` from `LetterCaseType`.
 
+    Args:
+        case: `LetterCase` specification.
+            This can either be a `LetterCase` or a string.
+            If it is a string, it has to be the name of a case (strings are converted to lowercase, so it's case-insensitive).
+            "_case" is stripped from the string, so snake_case will resolve to snake which will then resolve to `LetterCase.SNAKE`
+
     Raises:
-        :raise ValueError: If the passed value is invalid and cannot be resolved to `LetterCase`
-        :raise TypeError: If something other than `LetterCaseType` is passed
+        ValueError: If the passed value is invalid and cannot be resolved to `LetterCase`
+        TypeError: If something other than `LetterCaseType` is passed
     """
     try:
         return LetterCase(case)

@@ -3,13 +3,15 @@ from functools import lru_cache
 from typing import Callable, Optional
 
 from lettercase import LetterCaseType, get_letter_case
-from . import dromedary_case, screaming_snake_case, snake_case, pascal_case
+from . import darwin_case, dromedary_case, pascal_case, screaming_snake_case, snake_case
+from .darwin_case import *
 from .dromedary_case import *
+from .pascal_case import *
 from .screaming_snake_case import *
 from .snake_case import *
-from .pascal_case import *
 
 __all__ = ["ConverterType", "get_converter", "convert_to",
+           *darwin_case.__all__,
            *dromedary_case.__all__,
            *pascal_case.__all__,
            *screaming_snake_case.__all__,

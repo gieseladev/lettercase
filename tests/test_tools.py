@@ -1,5 +1,5 @@
 import lettercase
-from lettercase import convert_iter_items, memo_converter, mut_convert_items, mut_convert_keys
+from lettercase import convert_iter_items, is_memo_converter, memo_converter, mut_convert_items, mut_convert_keys
 
 
 def test_conversion_memo():
@@ -24,11 +24,18 @@ def test_conversion_memo():
 
 
 def test_memo_converter():
+    converter = lettercase.get_converter("snake", "dromedary")
+
+    assert not is_memo_converter(converter)
+
     simple_memo = {}
-    converter = memo_converter(lettercase.get_converter("snake", "dromedary"), simple_memo)
+
+    converter = memo_converter(converter, simple_memo)
 
     assert converter("snake_case") == "snakeCase"
     assert "snake_case" in simple_memo
+
+    assert is_memo_converter(converter)
 
 
 def test_convert_iter_items():

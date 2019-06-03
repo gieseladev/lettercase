@@ -8,7 +8,9 @@ from typing import Any, Iterable, Iterator, Mapping, MutableMapping, MutableSequ
 from .converters import ConverterType, get_converter
 from .letter_case import LetterCaseType, get_letter_case
 
-__all__ = ["ConversionMemo", "memo_converter", "convert_iter_items", "mut_convert_items", "mut_convert_keys"]
+__all__ = ["ConversionMemo", "memo_converter", "is_memo_converter",
+           "convert_iter_items",
+           "mut_convert_items", "mut_convert_keys"]
 
 T = TypeVar("T")
 
@@ -116,6 +118,9 @@ class ConversionMemo(UserDict):
             return default
 
 
+MEMO_CONVERTER_FLAG = "__memoized__"
+
+
 def memo_converter(converter: ConverterType, memo: Union[Mapping[str, str], MutableMapping[str, str]]) -> ConverterType:
     """Decorator which adds memoization to a converter.
 
@@ -133,7 +138,7 @@ def memo_converter(converter: ConverterType, memo: Union[Mapping[str, str], Muta
     """
 
     @wraps(converter)
-    def decorator(text: str) -> str:
+    def wrapper(text: str) -> str:
         try:
             return memo[text]
         except KeyError:
@@ -146,10 +151,25 @@ def memo_converter(converter: ConverterType, memo: Union[Mapping[str, str], Muta
 
         return new_text
 
-    return decorator
+    setattr(wrapper, MEMO_CONVERTER_FLAG, True)
+
+    return wrapper
 
 
-def _get_converter(from_case: Optional[LetterCaseType], to_case: LetterCaseType, memo: Optional[Mapping[str, str]]) -> ConverterType:
+def is_memo_converter(converter: ConverterType) -> bool:
+    """Check if a converter is memoized using `memo_converter`.
+
+    Args:
+        converter: Converter to check
+
+    Returns:
+        `True` if the converter is memoized, `False` otherwise.
+    """
+    return getattr(converter, MEMO_CONVERTER_FLAG, False)
+
+
+def _get_converter(from_case: Optional[LetterCaseType], to_case: LetterCaseType,
+                   memo: Optional[Mapping[str, str]]) -> ConverterType:
     """Internal utility function to get a patched converter.
 
     Raises:

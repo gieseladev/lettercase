@@ -2,7 +2,8 @@ from typing import List
 
 from lettercase import LetterCase, detect_case
 
-__all__ = ["snake_to_dromedary_case", "screaming_snake_to_dromedary_case", "darwin_to_dromedary_case", "pascal_to_dromedary_case",
+__all__ = ["snake_to_dromedary_case", "screaming_snake_to_dromedary_case", "darwin_to_dromedary_case",
+           "pascal_to_dromedary_case",
            "to_dromedary_case"]
 
 
@@ -32,11 +33,16 @@ def snake_to_dromedary_case(text: str) -> str:
     return "".join(chars)
 
 
-screaming_snake_to_dromedary_case = snake_to_dromedary_case
-screaming_snake_to_dromedary_case.__doc__ = """Convert from SCREAMING_SNAKE_CASE to dromedaryCase."""
+def screaming_snake_to_dromedary_case(text: str) -> str:
+    """Convert from SCREAMING_SNAKE_CASE to dromedaryCase."""
+    from .snake_case import screaming_snake_to_snake_case
+    return snake_to_dromedary_case(screaming_snake_to_snake_case(text))
 
-darwin_to_dromedary_case = snake_to_dromedary_case
-darwin_to_dromedary_case.__doc__ = """Convert from Darwin_Case to dromedaryCase."""
+
+def darwin_to_dromedary_case(text: str) -> str:
+    """Convert from Darwin_Case to dromedaryCase."""
+    from .snake_case import darwin_to_snake_case
+    return snake_to_dromedary_case(darwin_to_snake_case(text))
 
 
 def pascal_to_dromedary_case(text: str) -> str:

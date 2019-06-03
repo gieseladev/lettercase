@@ -12,7 +12,7 @@ def dromedary_to_snake_case(text: str) -> str:
 
     If there is a space just before it, no underscore
     will be used, however, the character will still be
-    lowercased ("hello World" -> "hello world").
+    lowercase ("hello World" -> "hello world").
     """
     if not text:
         return text

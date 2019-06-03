@@ -15,5 +15,7 @@ def test_pascal_to_dromedary_case():
 
 def test_to_dromedary_case():
     assert to_dromedary_case("hey_world") == "heyWorld"
+    assert to_dromedary_case("HEY_WORLD") == "heyWorld"
+    assert to_dromedary_case("Hey_World") == "heyWorld"
     assert to_dromedary_case("heyWorld") == "heyWorld"
     assert to_dromedary_case("HeyWorld") == "heyWorld"

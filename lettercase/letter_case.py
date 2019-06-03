@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import Set, Union
 
-_all__ = ["LetterCase", "CAMEL_CASE", "UNDERSCORE_CASE", "LetterCaseType", "get_letter_case"]
+__all__ = ["LetterCase", "CAMEL_CASE", "UNDERSCORE_CASE", "LetterCaseType", "get_letter_case"]
 
 
 class LetterCase(Enum):
@@ -34,11 +34,14 @@ def get_letter_case(case: LetterCaseType) -> LetterCase:
     Args:
         case: `LetterCase` specification.
             This can either be a `LetterCase` or a string.
-            If it is a string, it has to be the name of a case (strings are converted to lowercase, so it's case-insensitive).
-            "_case" is stripped from the string, so snake_case will resolve to snake which will then resolve to `LetterCase.SNAKE`
+            If it is a string, it has to be the name of a case
+            (strings are converted to lowercase, so it's case-insensitive).
+            "_case" is stripped from the string, so snake_case will resolve to
+            snake which will then resolve to `LetterCase.SNAKE`
 
     Raises:
-        ValueError: If the passed value is invalid and cannot be resolved to `LetterCase`
+        ValueError: If the passed value is invalid and cannot be resolved to
+            `LetterCase`
         TypeError: If something other than `LetterCaseType` is passed
     """
     try:

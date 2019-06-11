@@ -1,7 +1,11 @@
 from enum import Enum
 from typing import Set, Union
 
-__all__ = ["LetterCase", "CAMEL_CASE", "UNDERSCORE_CASE", "LetterCaseType", "get_letter_case"]
+__all__ = ["LetterCase",
+           "SNAKE_CASE", "SCREAMING_SNAKE_CASE", "DARWIN_CASE",
+           "PASCAL_CASE", "DROMEDARY_CASE",
+           "CAMEL_CASE", "UNDERSCORE_CASE",
+           "LetterCaseType", "get_letter_case"]
 
 
 class LetterCase(Enum):
@@ -20,6 +24,13 @@ class LetterCase(Enum):
     PASCAL = "pascal"
     DROMEDARY = "dromedary"
 
+
+SNAKE_CASE = LetterCase.SNAKE
+SCREAMING_SNAKE_CASE = LetterCase.SCREAMING_SNAKE
+DARWIN_CASE = LetterCase.DARWIN
+
+PASCAL_CASE = LetterCase.PASCAL
+DROMEDARY_CASE = LetterCase.DROMEDARY
 
 CAMEL_CASE: Set[LetterCase] = {LetterCase.PASCAL, LetterCase.DROMEDARY}
 

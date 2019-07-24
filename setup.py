@@ -1,20 +1,21 @@
 from pathlib import Path
-
-from setuptools import find_packages, setup
+import setuptools
 
 import lettercase
 
 long_description = Path("README.md").read_text()
 
-setup(
+setuptools.setup(
     name="lettercase",
     version=lettercase.__version__,
     description="Detection and conversion between letter cases",
+    author="Giesela Inc.",
+    author_email="team@giesela.dev",
+
     long_description=long_description,
     long_description_content_type="text/markdown",
-    author="Giesela Inc.",
-    packages=find_packages(exclude=("tests", "venv")),
-    python_requires=">=3.7",
-    install_requires=[
-    ],
+    url="https://github.com/gieseladev/lettercase",
+
+    packages=setuptools.find_packages(exclude=("tests", "venv")),
+    python_requires="~=3.7",
 )

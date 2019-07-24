@@ -1,122 +1,106 @@
 """Utilities for making conversion easier."""
 
-from collections import UserDict
 from contextlib import suppress
 from functools import wraps
-from typing import Any, Iterable, Iterator, Mapping, MutableMapping, MutableSequence, Optional, Set, TypeVar, Union
+from typing import Any, Dict, FrozenSet, Generic, Iterable, Iterator, Mapping, MutableMapping, MutableSequence, \
+    Optional, Set, Tuple, TypeVar, Union
 
 from .converters import ConverterType, get_converter
-from .letter_case import LetterCaseType, get_letter_case
+from .letter_case import LetterCase, LetterCaseType, get_letter_case
 
-__all__ = ["ConversionMemo", "memo_converter", "is_memo_converter",
+__all__ = ["ConversionMemo",
+           "MemoType",
+           "memo_converter", "is_memo_converter",
            "convert_iter_items",
            "mut_convert_items", "mut_convert_keys"]
 
 T = TypeVar("T")
+K = TypeVar("K")
+V = TypeVar("V")
 
 
-class ConversionMemo(UserDict):
-    """Mapping specialised for converter memoization.
+class _InverseMappingWrapper(MutableMapping[K, V], Generic[K, V]):
+    _forward: MutableMapping[K, V]
+    _backward: MutableMapping[V, K]
 
-    This is a two-way mapping so adding key: value will also add value: key.
-    The consequence of this is that the `keys` and `values` methods will return
-    identical sets.
+    def __init__(self, forward: MutableMapping[K, V], backward: MutableMapping[V, K]) -> None:
+        assert len(forward) == len(backward), "lengths need to match"
 
-    The getitem method is the same as with any normal dictionary, apart from it being two-way, but
-    the `get` method automatically converts the text if it doesn't already exist.
-    This can also be achieved manually using the `convert` method.
+        self._forward = forward
+        self._backward = backward
 
-    Since this is a two-way mapping, setting a key to a value will also set the value to the key
-    and deleting a key will also remove the converted key.
+    def __setitem__(self, k: K, v: V) -> None:
+        self._forward[k] = v
+        self._backward[v] = k
 
-    Attributes:
-        from_case (LetterCase): First letter case
-        to_case (LetterCase): Second letter case
+    def __delitem__(self, k: K) -> None:
+        v = self[k]
+        del self._forward[k]
+        del self._backward[v]
 
-    Args:
-        from_case (LetterCaseType): First letter case
-        to_case (LetterCaseType): Second letter case
+    def __getitem__(self, k: K) -> V:
+        return self._forward[k]
 
-    Notes:
-        The cases need to be specified because the memo cannot handle more than two cases
-        at once.
+    def __len__(self) -> int:
+        return len(self._forward)
 
-        The order of the cases in the constructor matters! The order determines how
-        the `direction` parameter is interpreted.
+    def __iter__(self) -> Iterator[K]:
+        return iter(self._forward)
+
+
+TwoWayMemoTuple = Tuple[Dict[str, str], Dict[str, str]]
+
+
+class ConversionMemo:
+    """Specialised memoization class which keeps memo maps.
+
+    The advantage of using this over a normal `dict` is that it automatically
+    "learns" the reverse operation of a conversion (ex: "a_b" -> "aB" also
+    learns "aB" -> "a_b").
+
+    These results are stored completely separate though, to avoid accidentally
+    converting the wrong way (if a text is already in the right case but because
+    of the map it's flipped).
     """
 
-    def __init__(self, from_case: LetterCaseType, to_case: LetterCaseType) -> None:
-        super().__init__()
-        self.from_case = get_letter_case(from_case)
-        self.to_case = get_letter_case(to_case)
+    _memos: Dict[FrozenSet[LetterCase], TwoWayMemoTuple]
 
-    def __setitem__(self, text: str, converted_text: str) -> None:
-        setter = super().__setitem__
-        setter(text, converted_text)
-        setter(converted_text, text)
+    def __init__(self) -> None:
+        self._memos = {}
 
-    def __delitem__(self, text: str) -> None:
-        converted_text = self.__getitem__(text)
-        deleter = super().__delitem__
-        deleter(text)
-        deleter(converted_text)
+    def _get_memo_tuple(self, from_case: Optional[LetterCase], to_case: LetterCase) -> TwoWayMemoTuple:
+        key = frozenset((from_case, to_case))
+        try:
+            memo_tuple = self._memos[key]
+        except KeyError:
+            memo_tuple = self._memos[key] = ({}, {})
 
-    @property
-    def forward_converter(self) -> ConverterType:
-        """Get the converter which converts from `from_case` to `to_case`.
+        first_case, second_case = key
+        if first_case is from_case:
+            return memo_tuple
+        else:
+            return memo_tuple[1], memo_tuple[0]
 
-        See Also:
-            `forward_converter`
-        """
-        return get_converter(self.from_case, self.to_case)
-
-    @property
-    def backward_converter(self) -> ConverterType:
-        """Get the converter which converts from `to_case` to `from_case`.
-
-        See Also:
-            `forward_converter`
-        """
-        return get_converter(self.to_case, self.from_case)
-
-    def convert(self, text: str, direction: bool) -> str:
-        """Convert a text and add it to the memo.
+    def get_memo(self, from_case: Optional[LetterCaseType], to_case: LetterCaseType) -> MutableMapping[str, str]:
+        """Get the memo map which maps texts from `from_case` to the converted text in `to_case`
 
         Args:
-            text: Text to convert
-            direction: `True` to use `forward_converter`,
-                `False` for `backward_converter`
+            from_case: Case to convert from. Can be `None`.
+            to_case: Case to convert to.
+
+        Returns:
+            A mutable mapping which is used to store `from_case` -> `to_case`
+            conversions.
         """
-        try:
-            value = self[text]
-        except KeyError:
-            converter = self.forward_converter if direction else self.backward_converter
-            value = self[text] = converter(text)
+        if from_case is not None:
+            from_case = get_letter_case(from_case)
+        to_case = get_letter_case(to_case)
 
-        return value
+        forward, backward = self._get_memo_tuple(from_case, to_case)
+        return _InverseMappingWrapper(forward, backward)
 
-    # noinspection PyMethodOverriding
-    def get(self, text: str, *, direction: bool = None, default: T = None) -> Optional[Union[str, T]]:
-        """Get the converted text.
 
-        Args:
-            text: Text to get the converted text for.
-            direction: See `convert` for an explanation of this keyword argument.
-                If you pass `None` instead of a `bool`, the text will not be converted
-                if it does not exist and the `default` value is used.
-            default: Value to return when the text is not
-                in the memo and `convert` is `False`.
-                If `convert` is `True`, this value will never
-                be returned.
-        """
-        try:
-            return self[text]
-        except KeyError:
-            if direction is not None:
-                return self.convert(text, direction)
-
-            return default
-
+MemoType = Union[ConversionMemo, Mapping[str, str], MutableMapping[str, str]]
 
 MEMO_CONVERTER_FLAG = "__memoized__"
 
@@ -169,7 +153,7 @@ def is_memo_converter(converter: ConverterType) -> bool:
 
 
 def _get_converter(from_case: Optional[LetterCaseType], to_case: LetterCaseType,
-                   memo: Optional[Mapping[str, str]]) -> ConverterType:
+                   memo: Optional[MemoType]) -> ConverterType:
     """Internal utility function to get a patched converter.
 
     Raises:
@@ -185,13 +169,16 @@ def _get_converter(from_case: Optional[LetterCaseType], to_case: LetterCaseType,
         raise ValueError(text)
 
     if memo is not None:
+        if isinstance(memo, ConversionMemo):
+            memo = memo.get_memo(from_case, to_case)
+
         converter = memo_converter(converter, memo)
 
     return converter
 
 
 def convert_iter_items(iterable: Iterable[str], from_case: Optional[LetterCaseType], to_case: LetterCaseType, *,
-                       memo: Mapping[str, str] = None) -> Iterator[str]:
+                       memo: MemoType = None) -> Iterator[str]:
     """Patch an iterable so that all items are converted to the case.
 
     Args:
@@ -205,7 +192,7 @@ def convert_iter_items(iterable: Iterable[str], from_case: Optional[LetterCaseTy
 
 
 def mut_convert_items(seq: MutableSequence[str], from_case: Optional[LetterCaseType], to_case: LetterCaseType, *,
-                      memo: Mapping[str, str] = None) -> None:
+                      memo: MemoType = None) -> None:
     """Convert all items in a mutable sequence to the given case."""
     converter = _get_converter(from_case, to_case, memo)
 
@@ -216,7 +203,7 @@ def mut_convert_items(seq: MutableSequence[str], from_case: Optional[LetterCaseT
 
 
 def mut_convert_keys(mapping: MutableMapping[str, Any], from_case: Optional[LetterCaseType], to_case: LetterCaseType, *,
-                     memo: Mapping[str, str] = None) -> None:
+                     memo: MemoType = None) -> None:
     """Convert all keys in a mutable mapping to the given case.
 
     Args:

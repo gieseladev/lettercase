@@ -3,24 +3,18 @@ from lettercase import convert_iter_items, is_memo_converter, memo_converter, mu
 
 
 def test_conversion_memo():
-    memo = lettercase.ConversionMemo("dromedary_case", "snake_case")
-    assert memo.convert("dromedaryCase", True) == "dromedary_case"
-    assert memo["dromedaryCase"] == "dromedary_case"
-    assert memo["dromedary_case"] == "dromedaryCase"
+    memo_conv = lettercase.ConversionMemo()
+    forward = memo_conv.get_memo("snake", "dromedary")
+    backward = memo_conv.get_memo("dromedary", "snake")
+    converter = lettercase.memo_converter(lettercase.get_converter("snake", "dromedary"), forward)
 
-    assert memo.get("test_ing", direction=False) == "testIng"
-    assert memo["testIng"] == "test_ing"
-    assert memo["test_ing"] == "testIng"
+    assert converter("dromedary_case") == "dromedaryCase"
 
-    assert memo.get("doesNotExist") is None
+    assert forward["dromedary_case"] == "dromedaryCase"
+    assert "dromedaryCase" not in forward
 
-    assert "doesNotExist" not in memo
-
-    assert memo.get("doesNotExist", default="something") == "something"
-
-    del memo["testIng"]
-    assert "testIng" not in memo
-    assert "test_ing" not in memo
+    assert backward["dromedaryCase"] == "dromedary_case"
+    assert "dromedary_case" not in backward
 
 
 def test_memo_converter():

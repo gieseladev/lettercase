@@ -16,6 +16,9 @@ def test_conversion_memo():
     assert backward["dromedaryCase"] == "dromedary_case"
     assert "dromedary_case" not in backward
 
+    assert converter("dromedaryCase") == "dromedaryCase"
+    assert backward["dromedaryCase"] == "dromedary_case"
+
 
 def test_memo_converter():
     converter = lettercase.get_converter("snake", "dromedary")

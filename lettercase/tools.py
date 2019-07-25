@@ -2,7 +2,7 @@
 
 from contextlib import suppress
 from functools import wraps
-from typing import Any, Dict, FrozenSet, Generic, Iterable, Iterator, Mapping, MutableMapping, MutableSequence, \
+from typing import Any, Dict, FrozenSet, Iterable, Iterator, Mapping, MutableMapping, MutableSequence, \
     Optional, Set, Tuple, TypeVar, Union
 
 from .converters import ConverterType, get_converter
@@ -15,36 +15,46 @@ __all__ = ["ConversionMemo",
            "mut_convert_items", "mut_convert_keys"]
 
 T = TypeVar("T")
-K = TypeVar("K")
-V = TypeVar("V")
 
 
-class _InverseMappingWrapper(MutableMapping[K, V], Generic[K, V]):
-    _forward: MutableMapping[K, V]
-    _backward: MutableMapping[V, K]
+class _CaseSensitiveInverseDict(MutableMapping[str, str]):
+    _forward: MutableMapping[str, str]
+    _backward: MutableMapping[str, str]
 
-    def __init__(self, forward: MutableMapping[K, V], backward: MutableMapping[V, K]) -> None:
-        assert len(forward) == len(backward), "lengths need to match"
+    _back_converter: ConverterType
 
+    def __init__(self, forward: MutableMapping[str, str], backward: MutableMapping[str, str],
+                 back_converter: ConverterType) -> None:
         self._forward = forward
         self._backward = backward
+        self._back_converter = back_converter
 
-    def __setitem__(self, k: K, v: V) -> None:
-        self._forward[k] = v
-        self._backward[v] = k
+    def _get_fkey(self, fkey: str) -> str:
+        try:
+            # if fkey is actually a bkey
+            return self._backward[fkey]
+        except KeyError:
+            return self._back_converter(fkey)
 
-    def __delitem__(self, k: K) -> None:
-        v = self[k]
-        del self._forward[k]
-        del self._backward[v]
+    def __setitem__(self, fkey: str, bkey: str) -> None:
+        fkey = self._get_fkey(fkey)
+        self._forward[fkey] = bkey
+        self._backward[bkey] = fkey
 
-    def __getitem__(self, k: K) -> V:
-        return self._forward[k]
+    def __delitem__(self, fkey: str) -> None:
+        fkey = self._get_fkey(fkey)
+        bkey = self[fkey]
+
+        del self._forward[fkey]
+        del self._backward[bkey]
+
+    def __getitem__(self, fkey: str) -> str:
+        return self._forward[fkey]
 
     def __len__(self) -> int:
         return len(self._forward)
 
-    def __iter__(self) -> Iterator[K]:
+    def __iter__(self) -> Iterator[str]:
         return iter(self._forward)
 
 
@@ -97,7 +107,7 @@ class ConversionMemo:
         to_case = get_letter_case(to_case)
 
         forward, backward = self._get_memo_tuple(from_case, to_case)
-        return _InverseMappingWrapper(forward, backward)
+        return _CaseSensitiveInverseDict(forward, backward, get_converter(to_case, from_case))
 
 
 MemoType = Union[ConversionMemo, Mapping[str, str], MutableMapping[str, str]]

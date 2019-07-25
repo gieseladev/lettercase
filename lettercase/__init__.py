@@ -7,4 +7,4 @@ from .tools import *
 # needs to come after all other imports
 from .converters import *
 
-__version__ = "0.3.1"
+__version__ = "0.3.2"
